@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'samp-app
+
+  AWS Cognito Authorizer on APIs
+
+  '
+Globals:
+  Function:
+    Timeout: 3
+Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizers:
+          GeneralAuth:
+            AuthorizationScopes:
+            - email
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer:
+                Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+              audience:
+              - Ref: Audience
+      CorsConfiguration:
+        AllowMethods:
+        - GET
+        AllowOrigins:
+        - http://localhost:8080
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: GeneralAuth
+            Path: /hello
+            Method: get
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: user-pool-test
+      Schema:
+      - Name: name
+        AttributeDataType: String
+        Mutable: true
+        Required: true
+      - Name: email
+        AttributeDataType: String
+        Mutable: false
+        Required: true
+      - Name: phone_number
+        AttributeDataType: String
+        Mutable: false
+        Required: true
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: user-pool-client
+      GenerateSecret: false
+      UserPoolId:
+        Ref: UserPool
+      AllowedOAuthFlows:
+      - code
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+      - phone
+      - email
+      - openid
+      - profile
+      CallbackURLs:
+      - http://localhost:3000/authenticated
+      DefaultRedirectURI: http://localhost:3000/authenticated
+      LogoutURLs:
+      - http://localhost:3000/signedout
+      SupportedIdentityProviders:
+      - COGNITO
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: userpooltestase
+      UserPoolId:
+        Ref: UserPool
+Outputs:
+  HelloWorldApi:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
+  HelloWorldFunction:
+    Description: Hello World Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunction
+      - Arn
+  HelloWorldFunctionIamRole:
+    Description: Implicit IAM Role created for Hello World function
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunctionRole
+      - Arn
