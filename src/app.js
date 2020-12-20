@@ -17,13 +17,13 @@ let response;
 exports.lambdaHandler = async (event, context, callback) => {
     var AWS = require('aws-sdk');
     var dynamoDb = new AWS.DynamoDB.DocumentClient();
-
+    let responseBody = JSON.parse(event.body);
     const params = {
         TableName: "Passenger-Trips",
         Item: {
             id: context.awsRequestId,
-            passengerName: event.body.passengerName,
-            tripTime: event.body.tripTime,
+            passengerName: responseBody.passengerName,
+            tripTime: responseBody.tripTime,
             createdAt: Date.now()
         }
     };
