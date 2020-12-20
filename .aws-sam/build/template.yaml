@@ -9,25 +9,19 @@ Globals:
   Function:
     Timeout: 3
 Resources:
-  HttpApi:
-    Type: AWS::Serverless::HttpApi
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
     Properties:
+      StageName: prod
+      Cors: '''*'''
       Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
         Authorizers:
-          GeneralAuth:
-            AuthorizationScopes:
-            - email
-            IdentitySource: $request.header.Authorization
-            JwtConfiguration:
-              issuer:
-                Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
-              audience:
-              - Ref: Audience
-      CorsConfiguration:
-        AllowMethods:
-        - GET
-        AllowOrigins:
-        - http://localhost:8080
+          MyCognitoAuthorizer:
+            UserPoolArn:
+              Fn::GetAtt:
+              - UserPool
+              - Arn
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -38,10 +32,10 @@ Resources:
         HelloWorld:
           Type: Api
           Properties:
-            Auth:
-              Authorizer: GeneralAuth
             Path: /hello
             Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -87,20 +81,3 @@ Resources:
       Domain: userpooltestase
       UserPoolId:
         Ref: UserPool
-Outputs:
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value:
-      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunction
-      - Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value:
-      Fn::GetAtt:
-      - HelloWorldFunctionRole
-      - Arn
