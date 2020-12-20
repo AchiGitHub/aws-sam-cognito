@@ -34,17 +34,17 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: '5'
         WriteCapacityUnits: '5'
-  HelloWorldFunction:
+  CreatePassengerTrip:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: src/
-      Handler: app.lambdaHandler
+      Handler: app.createPassengerTrips
       Runtime: nodejs12.x
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /hello
+            Path: /passenger
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
@@ -65,6 +65,23 @@ Resources:
                     - ':'
                     - Ref: 'AWS::AccountId'
                     - ':table/Passenger-Trips'
+  GetPassengerTrips:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: app.getPassengerTrips
+      Runtime: nodejs12.x
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /passenger
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Passenger-Trips
   UserPool:
     Type: "AWS::Cognito::UserPool"
     Properties:

@@ -35,17 +35,17 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: '5'
         WriteCapacityUnits: '5'
-  HelloWorldFunction:
+  CreatePassengerTrip:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: HelloWorldFunction
-      Handler: app.lambdaHandler
+      CodeUri: CreatePassengerTrip
+      Handler: app.createPassengerTrips
       Runtime: nodejs12.x
       Events:
         HelloWorld:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /passenger
             Method: post
             RestApiId:
               Ref: ApiGatewayApi
@@ -66,6 +66,23 @@ Resources:
               - ':'
               - Ref: AWS::AccountId
               - :table/Passenger-Trips
+  GetPassengerTrips:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetPassengerTrips
+      Handler: app.getPassengerTrips
+      Runtime: nodejs12.x
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /passenger
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Passenger-Trips
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:

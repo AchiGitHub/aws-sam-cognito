@@ -14,16 +14,16 @@ let response;
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  * 
  */
-exports.lambdaHandler = async (event, context, callback) => {
+module.exports.createPassengerTrips = async (event, context, callback) => {
     var AWS = require('aws-sdk');
     var dynamoDb = new AWS.DynamoDB.DocumentClient();
-
+    let responseBody = JSON.parse(event.body);
     const params = {
         TableName: "Passenger-Trips",
         Item: {
             id: context.awsRequestId,
-            passengerName: event.body.passengerName,
-            tripTime: event.body.tripTime,
+            passengerName: responseBody.passengerName,
+            tripTime: responseBody.tripTime,
             createdAt: Date.now()
         }
     };
@@ -35,6 +35,28 @@ exports.lambdaHandler = async (event, context, callback) => {
             var response = {
                 "statusCode": 200,
                 "body": JSON.stringify(params.Item)
+            };
+            return response;
+        }, (error) => {
+            return error;
+        });
+};
+
+module.exports.getPassengerTrips = async (event, context, callback) => {
+    var AWS = require('aws-sdk');
+    var dynamoDb = new AWS.DynamoDB.DocumentClient();
+    const params = {
+        TableName: "Passenger-Trips",
+        Select: "ALL_ATTRIBUTES"
+    };
+
+    return dynamoDb
+        .scan(params)
+        .promise()
+        .then((result) => {
+            var response = {
+                "statusCode": 200,
+                "body": JSON.stringify(result)
             };
             return response;
         }, (error) => {
