@@ -8,4 +8,11 @@ source_md5 = ""
 packagetype = "Zip"
 functions = ["CreatePassengerTrip", "GetPassengerTrips"]
 
+[function_build_definitions.6483604d-9336-433d-af37-724744f93cc2]
+codeuri = "ManagePayments/"
+runtime = "nodejs12.x"
+source_md5 = ""
+packagetype = "Zip"
+functions = ["CreatePassengerPayment"]
+
 [layer_build_definitions]
