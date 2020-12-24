@@ -20,7 +20,7 @@ Resources:
         DefaultAuthorizer: MyCognitoAuthorizer
         Authorizers:
           MyCognitoAuthorizer:
-            UserPoolArn: !GetAtt UserPool.Arn
+            UserPoolArn: !ImportValue UserPoolArn
   DynamoDBTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -127,48 +127,3 @@ Resources:
                     - ':'
                     - Ref: 'AWS::AccountId'
                     - ':table/Passenger-Payments'
-  UserPool:
-    Type: "AWS::Cognito::UserPool"
-    Properties:
-      UserPoolName: user-pool-test
-      Schema:
-        - Name: name
-          AttributeDataType: String
-          Mutable: true
-          Required: true
-        - Name: email
-          AttributeDataType: String
-          Mutable: false
-          Required: true
-        - Name: phone_number
-          AttributeDataType: String
-          Mutable: false
-          Required: true
-  #Specifies an Amazon Cognito user pool client
-  UserPoolClient:
-    Type: "AWS::Cognito::UserPoolClient"
-    Properties:
-      ClientName: user-pool-client
-      GenerateSecret: false
-      UserPoolId: !Ref UserPool
-      AllowedOAuthFlows: 
-        - code
-      AllowedOAuthFlowsUserPoolClient: true
-      AllowedOAuthScopes: 
-        - phone
-        - email
-        - openid
-        - profile
-      CallbackURLs: 
-        - http://localhost:3000/authenticated
-      DefaultRedirectURI: http://localhost:3000/authenticated
-      LogoutURLs:
-        - http://localhost:3000/signedout
-      SupportedIdentityProviders:
-        - COGNITO
-  #Creates a new domain for a user pool
-  UserPoolDomain:
-    Type: AWS::Cognito::UserPoolDomain
-    Properties:
-      Domain: userpooltestase
-      UserPoolId: !Ref UserPool
